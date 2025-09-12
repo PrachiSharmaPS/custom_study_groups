@@ -4,7 +4,20 @@ const { authenticate,login,getCurrentUser,  oauthAuthorize,oauthCallback,oauthRe
 const {  validateCreateGroup, validateAddMember, validateCreateGoal,validateRecordActivity,  validateObjectId,  validateLeaderboardQuery} = require('../middleware/validation');
 
 // Import controllers
-const groupsController = require('../controllers/groupsController');
+const {
+  getUserGroups,
+  createGroup,
+  getGroupDetails,
+  getGroupMembers,
+  addMemberToGroup,
+  createGroupGoal,
+  getActiveGoal,
+  recordActivity,
+  getLeaderboard,
+  getGroupProgress,
+  getUserProgress,
+  getGroupMembersProgress
+} = require('../controllers/groupsController');
 
 const router = express.Router();
 
@@ -87,85 +100,47 @@ router.get('/api/test-auth', authenticate, (req, res) => {
   });
 });
 
-// Simple test endpoint to create a test user and get token (for testing only)
-router.post('/api/test/create-test-user', async (req, res) => {
-  try {
-    const jwt = require('jsonwebtoken');
-    const { User } = require('../models');
-    
-    // Create or find test user
-    let user = await User.findOne({ email: 'test@example.com' });
-    
-    if (!user) {
-      user = await User.create({
-        email: 'test@example.com',
-        name: 'Test User',
-        avatar: 'https://ui-avatars.com/api/?name=Test+User&background=random',
-        providers: ['test']
-      });
-    }
-    
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE || '5m' }
-    );
-    
-    res.json({
-      success: true,
-      message: 'Test user created and token generated',
-      data: {
-        token,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          avatar: user.avatar
-        }
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create test user',
-      error: {
-        code: 'TEST_USER_ERROR',
-        details: error.message
-      },
-      data: null
-    });
-  }
-});
 
 // ==================== Groups routes ====================
 
 // GET /api/groups - List user's groups
-router.get('/api/groups', authenticate, groupsController.getUserGroups);
+router.get('/api/groups', authenticate, getUserGroups);
 
 // POST /api/groups - Create study group
-router.post('/api/groups', authenticate, validateCreateGroup, groupsController.createGroup);
+router.post('/api/groups', authenticate, validateCreateGroup, createGroup);
 
 // GET /api/groups/:id - Get group details
-router.get('/api/groups/:id', authenticate, validateObjectId, groupsController.getGroupDetails);
+router.get('/api/groups/:id', authenticate, validateObjectId('id'), getGroupDetails);
+
+// GET /api/groups/:id/members - Get group members
+router.get('/api/groups/:id/members', authenticate, validateObjectId('id'), getGroupMembers);
 
 // POST /api/groups/:id/members - Add member to group
-router.post('/api/groups/:id/members', authenticate, validateObjectId, validateAddMember, groupsController.addMemberToGroup);
+router.post('/api/groups/:id/members', authenticate, validateObjectId('id'), validateAddMember, addMemberToGroup);
 
 // POST /api/groups/:id/goals - Create goal for group
-router.post('/api/groups/:id/goals', authenticate, validateObjectId, validateCreateGoal, groupsController.createGroupGoal);
+router.post('/api/groups/:id/goals', authenticate, validateObjectId('id'), validateCreateGoal, createGroupGoal);
 
 // GET /api/groups/:id/goals/active - Get active goal
-router.get('/api/groups/:id/goals/active', authenticate, validateObjectId, groupsController.getActiveGoal);
+router.get('/api/groups/:id/goals/active', authenticate, validateObjectId('id'), getActiveGoal);
 
 // POST /api/groups/:id/activities - Record activity
-router.post('/api/groups/:id/activities', authenticate, validateObjectId, validateRecordActivity, groupsController.recordActivity);
+router.post('/api/groups/:id/activities', authenticate, validateObjectId('id'), validateRecordActivity, recordActivity);
 
 // GET /api/groups/:id/leaderboard - Get leaderboard
-router.get('/api/groups/:id/leaderboard', authenticate, validateObjectId, validateLeaderboardQuery, groupsController.getLeaderboard);
+router.get('/api/groups/:id/leaderboard', authenticate, validateObjectId('id'), validateLeaderboardQuery, getLeaderboard);
 
-// GET /api/groups/:id/progress - Get progress
-router.get('/api/groups/:id/progress', authenticate, validateObjectId, groupsController.getGroupProgress);
+// GET /api/groups/:id/progress - Get group progress
+router.get('/api/groups/:id/progress', authenticate, validateObjectId('id'), getGroupProgress);
+
+// GET /api/groups/:id/members/progress - Get all members' progress
+router.get('/api/groups/:id/members/progress', authenticate, validateObjectId('id'), getGroupMembersProgress);
+
+// GET /api/groups/:id/users/:userId/progress - Get specific user's progress
+router.get('/api/groups/:id/users/:userId/progress', authenticate, validateObjectId('id'), getUserProgress);
+
+// GET /api/groups/:id/my-progress - Get current user's progress
+router.get('/api/groups/:id/my-progress', authenticate, validateObjectId('id'), getUserProgress);
 
 // 404 handler for API routes
 router.use((req, res) => {

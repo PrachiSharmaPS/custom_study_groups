@@ -12,6 +12,9 @@ const errorHandler = require('./middleware/errorHandler');
 // Import routes
 const routes = require('./routes/routes');
 
+// Import maintenance functions
+const { runMaintenanceTasks } = require('./controllers/groupsController');
+
 const app = express();
 
 // Connect to databases
@@ -42,4 +45,22 @@ app.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`API Documentation: http://localhost:${PORT}/api`);
   console.log(`Health Check: http://localhost:${PORT}/health`);
+  
+  // Run maintenance tasks every 5 minutes
+  setInterval(async () => {
+    try {
+      await runMaintenanceTasks();
+    } catch (error) {
+      console.error('Error running maintenance tasks:', error);
+    }
+  }, 5 * 60 * 1000); // 5 minutes
+  
+  // Run initial maintenance task
+  setTimeout(async () => {
+    try {
+      await runMaintenanceTasks();
+    } catch (error) {
+      console.error('Error running initial maintenance tasks:', error);
+    }
+  }, 10000); // 10 seconds after startup
 });

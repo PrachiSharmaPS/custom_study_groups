@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { User } = require('../models');
+const User = require('../models/User');
 
 // ==================== OAuth Configuration ====================
 const OAUTH_PROVIDERS = {
@@ -18,7 +18,6 @@ const OAUTH_PROVIDERS = {
 const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
-    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,

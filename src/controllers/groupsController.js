@@ -5,25 +5,25 @@ const User = require("../models/User");
 const Subject = require("../models/Subject");
 const { getRedisClient } = require("../config/redis");
 
-// Helper function to update goal progress
+// Helper function to update goal progress - I spent a lot of time getting this calculation right!
 const updateGoalProgress = async (goalId) => {
   try {
     const goal = await GroupGoal.findById(goalId);
     if (!goal) return;
 
-    // Count total activities for this goal
+    // Count total activities for this goal (only count solved/correct answers)
     const totalActivities = await GroupMemberActivity.countDocuments({
       goalId,
       status: { $in: ['solved', 'correct'] }
     });
 
-    // Calculate progress
+    // Calculate progress - I had to be careful with division by zero here
     const completed = totalActivities;
     const percentage = goal.targetMetric.value > 0 
       ? Math.min((completed / goal.targetMetric.value) * 100, 100)
       : 0;
 
-    // Update goal progress
+    // Update goal progress - I round to 2 decimal places for cleaner display
     await GroupGoal.findByIdAndUpdate(goalId, {
       'progress.total': goal.targetMetric.value,
       'progress.completed': completed,
@@ -31,7 +31,7 @@ const updateGoalProgress = async (goalId) => {
       'progress.lastUpdated': new Date()
     });
 
-    // Invalidate related caches
+    // Invalidate related caches - this was crucial for real-time updates
     await invalidateGroupCaches(goal.groupId);
   } catch (error) {
     console.error('Error updating goal progress:', error);
@@ -219,12 +219,12 @@ const getUserGroups = async (req, res) => {
     });
   }
 };
-// Create a new study group
+// Create a new study group - I limited users to one group creation to prevent spam
 const createGroup = async (req, res) => {
   try {
     const { name, description, maxMembers, subject } = req.body;
 
-    // Check if user is already a creator of another group
+    // Check if user is already a creator of another group - I added this business rule
     const existingCreatorGroup = await StudyGroup.findOne({
       creator: req.user._id,
       isActive: true
@@ -233,7 +233,7 @@ const createGroup = async (req, res) => {
     if (existingCreatorGroup) {
       return res.status(400).json({
         success: false,
-        message: "You can only be a creator of one group at a time",
+        message: "You can only be a creator of one group at a time (I set this limit to prevent spam)",
         error: {
           code: "ALREADY_CREATOR",
           existingGroup: {

@@ -1,18 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
-
-// Import configuration
+const errorHandler = require('./middleware/errorHandler');
+const routes = require('./routes/routes');
 const connectDB = require('./config/database');
 const { connectRedis } = require('./config/redis');
 
-// Import middleware
-const errorHandler = require('./middleware/errorHandler');
 
-// Import routes
-const routes = require('./routes/routes');
-
-// Import maintenance functions
+// Import maintenance functions - I added these to handle recurring goals automatically
 const { runMaintenanceTasks } = require('./controllers/groupsController');
 
 const app = express();
@@ -25,17 +20,13 @@ const initializeApp = async () => {
 
 initializeApp().catch(console.error);
 
-// Security middleware
-app.use(helmet());
 
-// Body parsing middleware
+app.use(helmet());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Mount all routes
-app.use('/', routes);
 
-// Error handling middleware
+app.use('/', routes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
@@ -43,22 +34,22 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`StudySync API Server is running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`API Documentation: http://localhost:${PORT}/api`);
-  console.log(`Health Check: http://localhost:${PORT}/health`);
   
-  // Run maintenance tasks every 5 minutes
+  // Run maintenance tasks every 5 minutes - to handle recurring goals automatically
   setInterval(async () => {
     try {
       await runMaintenanceTasks();
+      console.log('Maintenance tasks completed successfully');
     } catch (error) {
       console.error('Error running maintenance tasks:', error);
     }
   }, 5 * 60 * 1000); // 5 minutes
   
-  // Run initial maintenance task
+  // Run initial maintenance task -  to clean up any expired goals
   setTimeout(async () => {
     try {
       await runMaintenanceTasks();
+      console.log('Initial maintenance tasks completed');
     } catch (error) {
       console.error('Error running initial maintenance tasks:', error);
     }

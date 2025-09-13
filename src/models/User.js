@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  // OAuth provider IDs
   googleId: {
     type: String,
     unique: true,
@@ -32,7 +31,7 @@ const userSchema = new mongoose.Schema({
   // Track which OAuth providers are linked
   providers: [{
     type: String,
-    enum: ['google', 'github'],
+    enum: ['google'],
     default: []
   }]
 }, {

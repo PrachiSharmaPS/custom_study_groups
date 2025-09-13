@@ -77,7 +77,7 @@ const authenticate = async (req, res, next) => {
 
 // ==================== Authentication Controllers ====================
 
-// Login endpoint to get JWT token
+// Login endpoint to get JWT token - I created this for easy testing without OAuth setup
 const login = async (req, res) => {
   try {
     const { email, name, googleId } = req.body;
@@ -85,7 +85,7 @@ const login = async (req, res) => {
     if (!email || !name || !googleId) {
       return res.status(400).json({
         success: false,
-        message: 'Email, name, and googleId are required',
+        message: 'Email, name, and googleId are required (I need all three for user creation)',
         error: {
           code: 'MISSING_FIELDS'
         },
@@ -167,8 +167,7 @@ const oauthAuthorize = async (req, res) => {
     const config = OAUTH_PROVIDERS[provider];
     const stateParam = state || crypto.randomBytes(16).toString('hex');
 
-    // Store state in session or Redis for validation
-    // For now, we'll include it in the redirect URL
+    // Build the OAuth URL
     const authUrl = new URL(config.authUrl);
     authUrl.searchParams.set('client_id', config.clientId);
     
@@ -181,14 +180,8 @@ const oauthAuthorize = async (req, res) => {
     authUrl.searchParams.set('scope', 'openid email profile');
     authUrl.searchParams.set('state', stateParam);
 
-    res.json({
-      success: true,
-      message: 'OAuth authorization URL generated',
-      data: {
-        auth_url: authUrl.toString(),
-        state: stateParam
-      }
-    });
+    // Redirect directly to the OAuth provider instead of returning JSON
+    res.redirect(authUrl.toString());
   } catch (error) {
     console.error('OAuth authorize error:', error);
     res.status(500).json({
@@ -327,6 +320,8 @@ const oauthCallback = async (req, res) => {
       message: 'OAuth login successful',
       data: {
         token,
+        oauth_token: tokenData.access_token,
+        refresh_token: tokenData.refresh_token,
         user: {
           id: user._id,
           email: user.email,

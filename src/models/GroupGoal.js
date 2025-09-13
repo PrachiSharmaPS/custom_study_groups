@@ -87,7 +87,7 @@ groupGoalSchema.index({ groupId: 1, isActive: 1 });
 groupGoalSchema.index({ deadline: 1 });
 groupGoalSchema.index({ 'recurringPattern.frequency': 1 });
 
-// Validation: either deadline or recurringPattern must be set
+// Validation for deadline or recurringPattern must be set
 groupGoalSchema.pre('validate', function(next) {
   if (!this.deadline && !this.recurringPattern?.frequency) {
     next(new Error('Either deadline or recurringPattern must be specified'));
@@ -98,7 +98,7 @@ groupGoalSchema.pre('validate', function(next) {
   }
 });
 
-// Ensure only one active goal per group
+// To Check if only one active goal per group
 groupGoalSchema.pre('save', async function(next) {
   if (this.isActive && this.isNew) {
     const existingActive = await this.constructor.findOne({

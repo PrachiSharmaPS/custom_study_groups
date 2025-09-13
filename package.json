@@ -1,7 +1,7 @@
 {
   "name": "studysync-backend",
   "version": "1.0.0",
-  "description": "StudySync - Custom Study Groups with Live Leaderboards Backend Service",
+  "description": "StudySync - Custom Study Groups with Live Leaderboards Backend Service (Built to solve the isolation problem in student learning)",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
@@ -12,9 +12,11 @@
     "education",
     "study-groups",
     "leaderboards",
-    "collaboration"
+    "collaboration",
+    "student-engagement",
+    "learning-communities"
   ],
-  "author": "StudySync Team",
+  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0"

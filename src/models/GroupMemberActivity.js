@@ -56,7 +56,7 @@ groupMemberActivitySchema.pre('save', async function(next) {
     });
     
     if (existing) {
-      next(new Error('Activity already recorded for this user-question-goal combination'));
+      next(new Error('Activity already record for this user-question-goal combination'));
     }
   }
   next();

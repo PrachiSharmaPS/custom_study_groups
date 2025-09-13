@@ -19,10 +19,7 @@ const connectRedis = async () => {
     await client.connect();
     return client;
   } catch (error) {
-    console.error('Redis connection error:', error.message);
-    console.log('Running without Redis - caching will be disabled');
-    // Don't exit process, app can work without Redis (degraded performance)
-  }
+    console.error('Redis connection error:', error.message); }
 };
 
 const getRedisClient = () => client;

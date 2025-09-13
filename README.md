@@ -23,9 +23,9 @@ I implemented these core features after researching what students actually need:
 ### Prerequisites
 
 I developed this on Windows 10 with these versions:
-- Node.js v18.17.0 (I recommend v16+ for best compatibility)
-- MongoDB 6.0+ (I used MongoDB Atlas for testing)
-- Redis 7.0+ (optional, but I highly recommend it for the caching features)
+- Node.js v18.17.0 
+- MongoDB 6.0+
+- Redis 7.0+ 
 
 ### Installation
 
@@ -42,8 +42,14 @@ npm install
 
 3. Set up environment variables:
 ```bash
-cp .env.example .env
-# Edit .env with your configuration - I'll show you the required fields below
+# Create a .env file in the root directory
+# Add the following environment variables (see Environment Variables section below for details):
+# PORT=3000
+# MONGODB_URI=mongodb://localhost:27017/study_groups_db
+# REDIS_URL=redis://localhost:6379
+# JWT_SECRET=your_jwt_secret_here
+# GOOGLE_CLIENT_ID=your_google_client_id
+# GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 4. Start the server:
@@ -207,16 +213,29 @@ src/
 
 ## Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Server port | 3000 |
-| `NODE_ENV` | Environment | development |
-| `MONGODB_URI` | MongoDB connection string | mongodb://localhost:27017/study_groups_db |
-| `REDIS_URL` | Redis connection string | redis://localhost:6379 |
-| `JWT_SECRET` | JWT signing secret | (required) |
-| `JWT_EXPIRE` | JWT expiration time | 5m |
-| `RATE_LIMIT_MAX_REQUESTS` | Rate limit per window | 100 |
-| `RATE_LIMIT_WINDOW_MS` | Rate limit window | 60000 |
+Create a `.env` file in the root directory with the following variables:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `PORT` | Server port | 3000 | No |
+| `MONGODB_URI` | MongoDB connection string | mongodb://localhost:27017/study_groups_db | No |
+| `REDIS_URL` | Redis connection string | redis://localhost:6379 | No |
+| `JWT_SECRET` | JWT signing secret | - | **Yes** |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID | - | **Yes** |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | - | **Yes** |
+| `JWT_EXPIRE` | JWT expiration time | 5m | No |
+| `RATE_LIMIT_MAX_REQUESTS` | Rate limit per window | 100 | No |
+| `RATE_LIMIT_WINDOW_MS` | Rate limit window | 60000 | No |
+
+**Example .env file:**
+```bash
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/study_groups_db
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your_super_secret_jwt_key_here
+GOOGLE_CLIENT_ID=your_google_client_id_from_google_cloud_console
+GOOGLE_CLIENT_SECRET=your_google_client_secret_from_google_cloud_console
+```
 
 ## Testing
 

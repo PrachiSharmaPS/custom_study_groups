@@ -12,7 +12,6 @@ const { runMaintenanceTasks } = require('./controllers/groupsController');
 
 const app = express();
 
-// Connect to databases
 const initializeApp = async () => {
   await connectDB();
   await connectRedis();
@@ -33,7 +32,6 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`StudySync API Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   
   // Run maintenance tasks every 5 minutes - to handle recurring goals automatically
   setInterval(async () => {
@@ -43,7 +41,7 @@ app.listen(PORT, () => {
     } catch (error) {
       console.error('Error running maintenance tasks:', error);
     }
-  }, 5 * 60 * 1000); // 5 minutes
+  }, 5 * 60 * 1000); // 5-minutes
   
   // Run initial maintenance task -  to clean up any expired goals
   setTimeout(async () => {

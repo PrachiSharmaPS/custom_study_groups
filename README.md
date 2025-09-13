@@ -65,10 +65,13 @@ http://localhost:3000
 ```
 
 ### Authentication
-All API endpoints except `/auth/*` and `/health` require authentication via JWT token in the Authorization header:
+All API endpoints except `/api/auth/*` require authentication via JWT token in the Authorization header:
 ```
 Authorization: Bearer <your-jwt-token>
 ```
+
+### Health Check
+To verify the API is running, you can check the 404 handler which will return a structured response for any non-existent endpoint.
 
 ### Google OAuth Setup
 
@@ -120,9 +123,12 @@ http://localhost:3000/api/auth/google
 
 | Endpoint | Method | Description | Request Body |
 |----------|--------|-------------|--------------|
-| `/api/groups/:id/activities` | POST | Record activity | `{questionId, status, timeSpent}` |
-| `/api/groups/:id/leaderboard` | GET | Get leaderboard | Query: `metric, timeWindow, sort, page, limit` |
-| `/api/groups/:id/progress` | GET | Get progress | Query: `breakdown` |
+| `/api/groups/:id/activities` | POST | Record activity | `{questionId, subjectId, status, timeSpent}` |
+| `/api/groups/:id/leaderboard` | GET | Get leaderboard | Query: `period, sortBy, sortOrder, subjects, page, limit` |
+| `/api/groups/:id/progress` | GET | Get group progress | - |
+| `/api/groups/:id/members/progress` | GET | Get all members' progress | - |
+| `/api/groups/:id/users/:userId/progress` | GET | Get specific user's progress | - |
+| `/api/groups/:id/my-progress` | GET | Get current user's progress | - |
 
 ### Example Requests
 
@@ -133,8 +139,7 @@ curl -X POST http://localhost:3000/api/groups \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Calculus Masters",
-    "description": "Advanced calculus study group",
-    "members": ["friend@example.com"]
+    "description": "Advanced calculus study group"
   }'
 ```
 
@@ -146,12 +151,12 @@ curl -X POST http://localhost:3000/api/groups/GROUP_ID/goals \
   -d '{
     "title": "100 Calculus Problems",
     "description": "Complete 100 calculus problems by end of month",
-    "subjects": ["SUBJECT_ID"],
+    "subjects": ["Calculus"],
     "targetMetric": {
       "type": "count",
       "value": 100
     },
-    "deadline": "2025-10-01T23:59:59.000Z"
+    "deadline": "2025-02-01T23:59:59.000Z"
   }'
 ```
 
@@ -161,7 +166,8 @@ curl -X POST http://localhost:3000/api/groups/GROUP_ID/activities \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "questionId": "QUESTION_ID",
+    "questionId": "q123",
+    "subjectId": "SUBJECT_ID",
     "status": "solved",
     "timeSpent": 300
   }'
@@ -169,7 +175,7 @@ curl -X POST http://localhost:3000/api/groups/GROUP_ID/activities \
 
 #### 4. Get Leaderboard
 ```bash
-curl "http://localhost:3000/api/groups/GROUP_ID/leaderboard?metric=count&timeWindow=weekly&sort=desc&limit=10" \
+curl "http://localhost:3000/api/groups/GROUP_ID/leaderboard?period=all&sortBy=questionsSolved&sortOrder=desc&limit=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -242,7 +248,7 @@ curl -X POST http://localhost:3000/api/groups/GROUP_ID/goals \
     "deadline": "2025-02-01T23:59:59.000Z"
   }'
 
-# 4. Record an activity (replace GOAL_ID with ID from step 3)
+# 4. Record an activity (replace SUBJECT_ID with actual subject ID)
 curl -X POST http://localhost:3000/api/groups/GROUP_ID/activities \
   -H "Authorization: Bearer TOKEN" \
   -H "Content-Type: application/json" \
@@ -257,11 +263,15 @@ curl -X POST http://localhost:3000/api/groups/GROUP_ID/activities \
 ### Step 3: View Leaderboard and Progress
 ```bash
 # 5. Get the leaderboard
-curl "http://localhost:3000/api/groups/GROUP_ID/leaderboard?metric=count&timeWindow=all" \
+curl "http://localhost:3000/api/groups/GROUP_ID/leaderboard?period=all&sortBy=questionsSolved&sortOrder=desc" \
   -H "Authorization: Bearer TOKEN"
 
 # 6. Check group progress
 curl "http://localhost:3000/api/groups/GROUP_ID/progress" \
+  -H "Authorization: Bearer TOKEN"
+
+# 7. Check your personal progress
+curl "http://localhost:3000/api/groups/GROUP_ID/my-progress" \
   -H "Authorization: Bearer TOKEN"
 ```
 
@@ -269,6 +279,8 @@ curl "http://localhost:3000/api/groups/GROUP_ID/progress" \
 - Step 1 should redirect to Google OAuth, then return a JWT token and create a group with ID
 - Step 2 should create a goal and record your first activity
 - Step 3 should show you at rank #1 with 1 problem solved and 1% progress toward the goal
+- The leaderboard will display your ranking and progress
+- Personal progress endpoint will show your individual contribution
 
 I tested these exact steps on my Windows machine with Google OAuth and they work consistently.
 

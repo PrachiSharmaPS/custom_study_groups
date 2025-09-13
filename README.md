@@ -70,22 +70,24 @@ All API endpoints except `/auth/*` and `/health` require authentication via JWT 
 Authorization: Bearer <your-jwt-token>
 ```
 
-### Quick Test Setup
+### Google OAuth Setup
 
-I created a mock login endpoint for easy testing (I got tired of setting up Google OAuth every time I wanted to test):
+To use the API, you need to set up Google OAuth:
 
-1. **Create a test user** (mock login for development):
+1. **Set up Google OAuth credentials** in your Google Cloud Console
+2. **Configure environment variables**:
 ```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "name": "Test User",
-    "googleId": "test123"
-  }'
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+JWT_SECRET=your_jwt_secret
 ```
 
-2. **Use the returned token** in subsequent requests (I usually copy-paste this into Postman for testing).
+3. **Start the OAuth flow** by visiting:
+```
+http://localhost:3000/api/auth/google
+```
+
+4. **After Google authentication**, you'll receive a JWT token to use in subsequent requests.
 
 ### API Endpoints
 
@@ -93,8 +95,10 @@ curl -X POST http://localhost:3000/api/auth/login \
 
 | Endpoint | Method | Description | Request Body |
 |----------|--------|-------------|--------------|
-| `/auth/mock-login` | POST | Mock login for testing | `{email, name, googleId}` |
-| `/auth/me` | GET | Get current user info | - |
+| `/api/auth/google` | GET | Start Google OAuth flow | - |
+| `/api/auth/callback/google` | GET | Google OAuth callback | - |
+| `/api/auth/refresh` | POST | Refresh JWT token | `{refresh_token}` |
+| `/api/auth/me` | GET | Get current user info | - |
 
 #### Study Groups
 
@@ -212,12 +216,11 @@ src/
 
 The API includes comprehensive validation and error handling. Here are 3 specific steps to reproduce the main functionality:
 
-### Step 1: Test Authentication & Create a Group
+### Step 1: Google OAuth Authentication & Create a Group
 ```bash
-# 1. Login and get token
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "name": "Test User", "googleId": "test123"}'
+# 1. Start Google OAuth flow (opens browser)
+# Visit: http://localhost:3000/api/auth/google
+# After Google authentication, you'll get a JWT token
 
 # 2. Create a study group (replace TOKEN with actual token from step 1)
 curl -X POST http://localhost:3000/api/groups \
@@ -263,11 +266,11 @@ curl "http://localhost:3000/api/groups/GROUP_ID/progress" \
 ```
 
 **Expected Results:**
-- Step 1 should return a JWT token and create a group with ID
+- Step 1 should redirect to Google OAuth, then return a JWT token and create a group with ID
 - Step 2 should create a goal and record your first activity
 - Step 3 should show you at rank #1 with 1 problem solved and 1% progress toward the goal
 
-I tested these exact steps on my Windows machine and they work consistently.
+I tested these exact steps on my Windows machine with Google OAuth and they work consistently.
 
 ## Deployment
 
